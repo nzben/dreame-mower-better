@@ -427,14 +427,15 @@ def generate_svg_map_image(data: Dict[str, Any], historical_file_path: str | Non
 
         # Plot map data as the main mowing path
         map_items = data.get("map", [])
-        # Per-zone data: list of (zone_segments, zone_track_segments, name) tuples
-        zone_data: List[Tuple[List[List[List[int]]], List[List[List[int]]], str]] = []
+        # Per-zone data: list of (zone_segments, zone_track_segments, name, type) tuples
+        zone_data: List[Tuple[List[List[List[int]]], List[List[List[int]]], str, int]] = []
 
         if map_items:
             for i, item in enumerate(map_items):
                 item_data = item.get("data", [])
                 item_track = item.get("track", [])
                 item_name = item.get("name", "")
+                item_type = item.get("type", 0)
 
                 all_points.extend(item_data)
                 all_points.extend(item_track)
@@ -465,7 +466,7 @@ def generate_svg_map_image(data: Dict[str, Any], historical_file_path: str | Non
                 if len(current_track_segment) > 1:
                     zone_track_segments.append(current_track_segment)
 
-                zone_data.append((zone_segments, zone_track_segments, item_name))
+                zone_data.append((zone_segments, zone_track_segments, item_name, item_type))
 
         # Add obstacle points
         obstacles = data.get("obstacle", [])
@@ -498,10 +499,10 @@ def generate_svg_map_image(data: Dict[str, Any], historical_file_path: str | Non
                 center_y = MAP_IMAGE_HEIGHT // 2
                 svg_lines.append(f'<g transform="rotate({rotation}, {center_x}, {center_y})">')
 
-            # 1. Draw zone fills (behind everything else)
+            # 1. Draw zone fills (behind everything else) — only for type=0 (actual mowing zones)
             multi_zone = len(zone_data) > 1
-            for i, (z_segs, _z_tracks, _z_name) in enumerate(zone_data):
-                if not z_segs or not multi_zone:
+            for i, (z_segs, _z_tracks, _z_name, z_type) in enumerate(zone_data):
+                if not z_segs or not multi_zone or z_type != 0:
                     continue
                 fill_color, outline_color = ZONE_COLORS[i % len(ZONE_COLORS)]
                 for seg in z_segs:
@@ -512,7 +513,7 @@ def generate_svg_map_image(data: Dict[str, Any], historical_file_path: str | Non
                             svg_lines.append(poly)
 
             # 2. Draw zone boundary outlines
-            for i, (z_segs, _z_tracks, _z_name) in enumerate(zone_data):
+            for i, (z_segs, _z_tracks, _z_name, _z_type) in enumerate(zone_data):
                 if z_segs:
                     color = ZONE_COLORS[i % len(ZONE_COLORS)][1] if multi_zone else COLORS_SVG['map_boundary']
                     boundary_path = svg_path_from_segments(z_segs, bounds, MAP_IMAGE_WIDTH, MAP_IMAGE_HEIGHT, color, 2)
@@ -520,7 +521,7 @@ def generate_svg_map_image(data: Dict[str, Any], historical_file_path: str | Non
                         svg_lines.append(boundary_path)
 
             # 3. Draw mowing tracks per zone
-            for i, (_z_segs, z_tracks, _z_name) in enumerate(zone_data):
+            for i, (_z_segs, z_tracks, _z_name, _z_type) in enumerate(zone_data):
                 if z_tracks:
                     track_path = svg_path_from_segments(z_tracks, bounds, MAP_IMAGE_WIDTH, MAP_IMAGE_HEIGHT, COLORS_SVG['mowing_path'], 2)
                     if track_path:
@@ -545,7 +546,7 @@ def generate_svg_map_image(data: Dict[str, Any], historical_file_path: str | Non
                         svg_lines.append(trajectory_path)
 
             # 6. Draw zone labels
-            for i, (z_segs, _z_tracks, z_name) in enumerate(zone_data):
+            for i, (z_segs, _z_tracks, z_name, _z_type) in enumerate(zone_data):
                 if not z_name or not z_segs:
                     continue
                 # Compute centroid from all boundary points in this zone
@@ -586,8 +587,8 @@ def generate_svg_map_image(data: Dict[str, Any], historical_file_path: str | Non
         legend_y = 50
         legend_items = []
 
-        has_segments = any(z_segs for z_segs, _, _ in zone_data)
-        has_tracks = any(z_tracks for _, z_tracks, _ in zone_data)
+        has_segments = any(z_segs for z_segs, _, _, _ in zone_data)
+        has_tracks = any(z_tracks for _, z_tracks, _, _ in zone_data)
         if has_segments and not multi_zone:
             legend_items.append(("Map Boundary", COLORS_SVG['map_boundary']))
         if has_tracks:
