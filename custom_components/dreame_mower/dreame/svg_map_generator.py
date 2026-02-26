@@ -582,6 +582,35 @@ def generate_svg_map_image(data: Dict[str, Any], historical_file_path: str | Non
 
         svg_lines.append(f'<text x="{MAP_IMAGE_WIDTH // 2}" y="30" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="{COLORS_SVG["text_color"]}" text-anchor="middle">{title}</text>')
 
+        # Add legend in top left
+        legend_x = 20
+        legend_y = 50
+        legend_items = []
+
+        if multi_zone:
+            # Show zone names with their colors
+            for i, (_z_segs, _z_tracks, z_name) in enumerate(zone_data):
+                if z_name:
+                    legend_items.append((z_name, ZONE_COLORS[i % len(ZONE_COLORS)][0]))
+        else:
+            has_segments = any(z_segs for z_segs, _, _ in zone_data)
+            has_tracks = any(z_tracks for _, z_tracks, _ in zone_data)
+            if has_segments:
+                legend_items.append(("Map Boundary", COLORS_SVG['map_boundary']))
+            if has_tracks:
+                legend_items.append(("Mowing Path", COLORS_SVG['mowing_path']))
+        if obstacles:
+            legend_items.append(("Obstacles", COLORS_SVG['obstacle']))
+        if trajectories:
+            legend_items.append(("Trajectory", '#b4b4b4'))
+        if mower_position:
+            legend_items.append(("Mower Position", COLORS_SVG['current_position']))
+
+        for i, (label, color) in enumerate(legend_items):
+            y_pos = legend_y + i * 20
+            svg_lines.append(f'<rect x="{legend_x}" y="{y_pos}" width="15" height="10" fill="{color}"/>')
+            svg_lines.append(f'<text x="{legend_x + 20}" y="{y_pos + 8}" font-family="Arial, sans-serif" font-size="10" fill="{COLORS_SVG["text_color"]}">{label}</text>')
+
         # Add timestamp from map data (use 'start' timestamp if available)
         start_timestamp = data.get("start")
         if start_timestamp:

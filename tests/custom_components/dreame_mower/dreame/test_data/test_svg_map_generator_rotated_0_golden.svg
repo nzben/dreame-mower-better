@@ -8,5 +8,13 @@
 <polygon points="209,1003 205,991 213,987" fill="#ff4d0065" stroke="#ff4d00"/>
 <path d="M 1086 60 L 1094 114 L 1073 311 L 1056 856 L 1032 1125 L 998 1142 L 952 1092 L 956 1003 L 990 974 L 973 940 L 923 949 L 814 940 L 784 957 L 784 970 L 818 1003 L 835 1045 L 826 1104 L 767 1146 L 83 1142 L 50 1100 L 50 1058 L 75 1012 L 54 953 L 62 924 L 381 911 L 398 898 L 394 714 L 415 684 L 763 676 L 784 651 L 763 236 L 767 68 L 797 55 L 1077 55" stroke="#b4b4b4" stroke-width="2" stroke-dasharray="10,5" fill="none"/>
 <text x="600" y="30" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#000000" text-anchor="middle">Dreame Mower Map (Current)</text>
+<rect x="20" y="50" width="15" height="10" fill="#006400"/>
+<text x="40" y="58" font-family="Arial, sans-serif" font-size="10" fill="#000000">Map Boundary</text>
+<rect x="20" y="70" width="15" height="10" fill="#ffa500"/>
+<text x="40" y="78" font-family="Arial, sans-serif" font-size="10" fill="#000000">Mowing Path</text>
+<rect x="20" y="90" width="15" height="10" fill="#ff4d00"/>
+<text x="40" y="98" font-family="Arial, sans-serif" font-size="10" fill="#000000">Obstacles</text>
+<rect x="20" y="110" width="15" height="10" fill="#b4b4b4"/>
+<text x="40" y="118" font-family="Arial, sans-serif" font-size="10" fill="#000000">Trajectory</text>
 <g><rect x="7" y="1172" width="174.0" height="18" fill="#f5f5f0" stroke="#000000"/><text x="10" y="1185" font-family="Arial, sans-serif" font-size="10" fill="#000000">Started: 2025-10-18 11:16:55</text></g>
 </svg>
