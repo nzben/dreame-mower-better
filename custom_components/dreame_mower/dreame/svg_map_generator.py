@@ -366,8 +366,18 @@ def generate_svg_map_image(data: Dict[str, Any], historical_file_path: str | Non
                 center_y = MAP_IMAGE_HEIGHT // 2
                 svg_lines.append(f'<g transform="rotate({rotation}, {center_x}, {center_y})">')
 
-            # 1. Draw zone fills (behind everything else) — only for type=0 (actual mowing zones)
+            # 0. Draw inter-zone connection paths (type=1) as dashed grey — behind zone fills
             multi_zone = len(zone_data) > 1
+            for i, (z_segs, _z_tracks, _z_name, z_type) in enumerate(zone_data):
+                if z_type != 1:
+                    continue
+                for seg in z_segs:
+                    if len(seg) >= 2:
+                        dashed = svg_dashed_path(seg, bounds, MAP_IMAGE_WIDTH, MAP_IMAGE_HEIGHT, '#b4b4b4', 3)
+                        if dashed:
+                            svg_lines.append(dashed)
+
+            # 1. Draw zone fills — only for type=0 (actual mowing zones)
             for i, (z_segs, _z_tracks, _z_name, z_type) in enumerate(zone_data):
                 if not z_segs or not multi_zone or z_type != 0:
                     continue
@@ -379,18 +389,19 @@ def generate_svg_map_image(data: Dict[str, Any], historical_file_path: str | Non
                         if poly:
                             svg_lines.append(poly)
 
-            # 2. Draw zone boundary outlines
-            for i, (z_segs, _z_tracks, _z_name, _z_type) in enumerate(zone_data):
-                if z_segs:
+            # 2. Draw zone boundary outlines (skip type=1 inter-zone paths)
+            for i, (z_segs, _z_tracks, _z_name, z_type) in enumerate(zone_data):
+                if z_segs and z_type == 0:
                     color = ZONE_COLORS[i % len(ZONE_COLORS)][1] if multi_zone else COLORS_SVG['map_boundary']
                     boundary_path = svg_path_from_segments(z_segs, bounds, MAP_IMAGE_WIDTH, MAP_IMAGE_HEIGHT, color, 2)
                     if boundary_path:
                         svg_lines.append(boundary_path)
 
             # 3. Draw mowing tracks per zone (skip in live mode — replaced by live path)
+            #    type=1 inter-zone paths are drawn as dashed grey in step 5 style
             if not live_coordinates:
-                for i, (_z_segs, z_tracks, _z_name, _z_type) in enumerate(zone_data):
-                    if z_tracks:
+                for i, (_z_segs, z_tracks, _z_name, z_type) in enumerate(zone_data):
+                    if z_tracks and z_type == 0:
                         track_path = svg_path_from_segments(z_tracks, bounds, MAP_IMAGE_WIDTH, MAP_IMAGE_HEIGHT, COLORS_SVG['mowing_path'], 2)
                         if track_path:
                             svg_lines.append(track_path)
@@ -404,16 +415,7 @@ def generate_svg_map_image(data: Dict[str, Any], historical_file_path: str | Non
                     if obstacle_polygon:
                         svg_lines.append(obstacle_polygon)
 
-            # 5. Draw trajectory (navigation path) - using dashed line
-            for trajectory in trajectories:
-                trajectory_data = trajectory.get("data", [])
-                if trajectory_data:
-                    trajectory_path = svg_dashed_path(trajectory_data, bounds, MAP_IMAGE_WIDTH, MAP_IMAGE_HEIGHT,
-                                                    '#b4b4b4', 2)
-                    if trajectory_path:
-                        svg_lines.append(trajectory_path)
-
-            # 6. Draw zone labels
+            # 5. Draw zone labels
             for i, (z_segs, _z_tracks, z_name, _z_type) in enumerate(zone_data):
                 if not z_name or not z_segs:
                     continue
@@ -500,7 +502,8 @@ def generate_svg_map_image(data: Dict[str, Any], historical_file_path: str | Non
             legend_items.append(("Mowing Path", COLORS_SVG['mowing_path']))
         if obstacles:
             legend_items.append(("Obstacles", COLORS_SVG['obstacle']))
-        if trajectories:
+        has_inter_zone = any(z_type == 1 for _, _, _, z_type in zone_data)
+        if has_inter_zone or trajectories:
             legend_items.append(("Trajectory", '#b4b4b4'))
         if live_coordinates:
             if len(live_coordinates) > 1:

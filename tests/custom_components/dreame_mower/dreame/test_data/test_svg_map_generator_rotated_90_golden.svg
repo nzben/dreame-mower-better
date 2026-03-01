@@ -7,7 +7,6 @@
 <polygon points="484,785 480,772 493,768 501,777" fill="#ff4d0065" stroke="#ff4d00"/>
 <polygon points="396,995 392,978 405,974 413,987" fill="#ff4d0065" stroke="#ff4d00"/>
 <polygon points="237,1003 233,991 241,987" fill="#ff4d0065" stroke="#ff4d00"/>
-<path d="M 1113 60 L 1122 114 L 1101 311 L 1084 856 L 1060 1125 L 1026 1142 L 980 1092 L 984 1003 L 1018 974 L 1001 940 L 950 949 L 841 940 L 812 957 L 812 970 L 846 1003 L 862 1045 L 854 1104 L 795 1146 L 111 1142 L 77 1100 L 77 1058 L 102 1012 L 81 953 L 90 924 L 409 911 L 426 898 L 421 714 L 442 684 L 791 676 L 812 651 L 791 236 L 795 68 L 825 55 L 1105 55" stroke="#b4b4b4" stroke-width="2" stroke-dasharray="10,5" fill="none"/>
 </g>
 <text x="600" y="30" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#000000" text-anchor="middle">Dreame Mower Map (Current)</text>
 <rect x="20" y="50" width="15" height="10" fill="#006400"/>

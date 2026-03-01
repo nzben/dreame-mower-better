@@ -296,10 +296,14 @@ def vector_map_to_map_data(vector_map: MowerVectorMap) -> dict:
             "type": 0,
         })
 
-    trajectories = []
+    # Add navigation paths as type=1 map items (inter-zone connections)
     for nav_path in vector_map.paths:
-        trajectories.append({
+        map_items.append({
             "data": [[x, y] for x, y in nav_path.path],
+            "track": [],
+            "id": nav_path.path_id,
+            "name": "",
+            "type": 1,
         })
 
     start = int(vector_map.last_updated) if vector_map.last_updated else 0
@@ -307,7 +311,7 @@ def vector_map_to_map_data(vector_map: MowerVectorMap) -> dict:
     return {
         "map": map_items,
         "obstacle": obstacles,
-        "trajectory": trajectories,
+        "trajectory": [],
         "start": start,
     }
 
